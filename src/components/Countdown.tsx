@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import styles from '../styles/components/Countdown.module.css';
 
+let countdownTimeout: NodeJS.Timeout;
+
 export function Countdown(){
     const [time, setTime] = useState(25 * 60);
-    const [active, setActive] = useState(false);
+    const [isActive, setIsActive] = useState(false);
+    const [hasFinished, setHasFinished] = useState(false);
 
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
@@ -12,18 +15,27 @@ export function Countdown(){
     const [secondLeft, secondRight] = String(seconds).padStart(2,'0').split('');
 
     function startCountdown(){
-        setActive(true);
+        setIsActive(true);
 
     }
 
+    function resetCountdown(){
+        setIsActive(false);
+        clearTimeout (countdownTimeout); //pausar o timeout para q ele não desça 1 segundo por já ter rodado.
+        setTime(25*60);
+    }
+
     useEffect(()=>{
-        if(active && time > 0){
+        if(isActive && time > 0){
             //setTimeOut -> algo aconteça depois de algum tempo
             //Nesse caso, executar uma função após 1 segundo
             //função executada é a setTime tirando 1 segundo da variável time
-            setTimeout(()=>{setTime(time-1)},1000)
+            countdownTimeout = setTimeout(()=>{setTime(time-1)},1000)
+        } else if (isActive && time == 0){
+            setHasFinished(true);
+            setIsActive(false);
         }
-    }, [active, time]) //sempre que active ou o time mudar, acione a função
+    }, [isActive, time]) //sempre que active ou o time mudar, acione a função
 
     return(
         <div>
@@ -38,13 +50,43 @@ export function Countdown(){
                     <span>{secondRight}</span>
                 </div>
             </div>
-        <button type="button" 
-            className={styles.countdownButton}
-            onClick={startCountdown} 
-        >
-            Iniciar um ciclo!
-        </button>
-        
+
+
+            {/* Uso do if/then/else */}
+            {/* Se hasFinished é verdade, <p>, se não null */}
+            {/* outra forma é usar o if/then, sem else */}
+            {/*     {hasFinished && (<p>Terminou</p>)}      */}
+
+            
+            {/* IF RESPONSÁVEL POR EXIBIR O BOTÃO DE CICLO ENCERRADO */}
+            {hasFinished ? (
+                <button disabled 
+                className={styles.countdownButton}
+            >
+                CICLO ENCERRADO!
+            </button>
+            ): (
+                // FRAGMENT <> -> div para resolver limitação que não é exibida no html.
+                <>
+                    {isActive ? (
+                    <button type="button" 
+                        className={`${styles.countdownButton} ${styles.countdownButtonActive}`}
+                        onClick={resetCountdown} 
+                    >
+                        ABANDONAR CICLO!
+                    </button>
+                    ) : (
+                    <button type="button" 
+                        className={styles.countdownButton}
+                        onClick={startCountdown} 
+                    >
+                        INICIAR CICLO!
+                    </button>
+                    )};
+
+                </>
+            )} 
+
         </div>
     );
 }
