@@ -25,7 +25,7 @@ export function CountdownProvider({ children }: CountdownProviderProps) {
     //fazendo uso do contexto, recuperando informações de outro componente, no caso, startNewChallenge()
     const { startNewChallenge } = useContext(ChallengesContext);
 
-    const [time, setTime] = useState(15 * 60);
+    const [time, setTime] = useState(0.05 * 60);
     const [isActive, setIsActive] = useState(false);
     const [hasFinished, setHasFinished] = useState(false);
 
@@ -41,7 +41,7 @@ export function CountdownProvider({ children }: CountdownProviderProps) {
     function resetCountdown(){
         setIsActive(false);
         clearTimeout (countdownTimeout); //pausar o timeout para q ele não desça 1 segundo por já ter rodado.
-        setTime(25*60);
+        setTime(0.05*60);
         setHasFinished(false);
     }
 
