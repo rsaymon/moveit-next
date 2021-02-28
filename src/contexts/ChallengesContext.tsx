@@ -1,5 +1,7 @@
 import { createContext, useState, ReactNode, useEffect } from 'react';
 import challenges from '../../challenges.json'
+import Cookies from 'js-cookie'
+import { LevelUpModal } from '../components/LevelUpModal';
 
 //criando o tipo Challenge que informa os dados do desafio.
 interface Challenge {
@@ -19,12 +21,16 @@ interface ChallengesConstextData {
     resetChallenge: () => void;
     experienceToNextLevel: number;
     completeChallenge: () => void;
+    closeLevelUpModal: () => void;
 }
 
 
 //definir um tipo para o childre, facilitando a identificação da tipagem
 interface ChallengesProviderProps {
     children: ReactNode;
+    level : number;
+    currentExperience: number;
+    challengesCompleted: number;
 }
 
 
@@ -32,23 +38,36 @@ interface ChallengesProviderProps {
 export const ChallengesContext = createContext({} as ChallengesConstextData);
 
 
-//Facilitando a identificação da tipagem, tipo passado!
-export function ChallengesProvider({ children }: ChallengesProviderProps) {
+//Facilitando a identificação da tipagem, tipo passado! ...rest é um objeto que tem dentro todos menos a children
+export function ChallengesProvider({ children, ...rest }: ChallengesProviderProps) {
 
     //preencher informações que eu quero passar entre componentes no ChallengesProviderProps
-    const [level, setLevel] = useState(1);
-    const [currentExperience, setCurrentExperience] = useState(0);
-    const [challengesCompleted, setChallengesCompleted] = useState(0);
+    const [level, setLevel] = useState(rest.level ?? 1);
+    const [currentExperience, setCurrentExperience] = useState(rest.currentExperience ?? 0);
+    const [challengesCompleted, setChallengesCompleted] = useState(rest.challengesCompleted ?? 0 );
     const [activeChallenge, setActiveChallenge] = useState(null);
     const experienceToNextLevel = Math.pow((level + 1) * 4, 2);
+    const [isLevelUpModalOpen, setIsLevelUpModalOpen] = useState(false);
 
     //Criando notificação. Pedindo a permissão. Array vazio indica que será executada uma única vez sempre que entrar nesse espaço.
     useEffect(() => {
         Notification.requestPermission();
     }, []);
 
+    useEffect(() => {
+        Cookies.set('level', String(level));
+        Cookies.set('currentExperience', String(currentExperience));
+        Cookies.set('challengesCompleted', String(challengesCompleted));
+
+    }, [level, currentExperience, challengesCompleted]);
+
+    function closeLevelUpModal(){
+        setIsLevelUpModalOpen(false);
+    }
+
     function levelUp() {
         setLevel(level + 1);
+        setIsLevelUpModalOpen(true);
     }
 
     function startNewChallenge() {
@@ -100,8 +119,9 @@ export function ChallengesProvider({ children }: ChallengesProviderProps) {
     return (
         // Todos os elementos dentro do provider terão acesso aos dados do contexto de Challenges.
         // Neste caso, o contexto é toda a app, para que haja comunicação entre todos os componentes.
-        <ChallengesContext.Provider value={{ level, currentExperience, challengesCompleted, levelUp, startNewChallenge, activeChallenge, resetChallenge, experienceToNextLevel, completeChallenge }}>
+        <ChallengesContext.Provider value={{ level, currentExperience, challengesCompleted, levelUp, startNewChallenge, activeChallenge, resetChallenge, experienceToNextLevel, completeChallenge, closeLevelUpModal }}>
             {children}
+            {isLevelUpModalOpen && <LevelUpModal />} 
         </ChallengesContext.Provider>
     )
 }

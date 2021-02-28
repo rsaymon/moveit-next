@@ -25,7 +25,7 @@ export function CountdownProvider({ children }: CountdownProviderProps) {
     //fazendo uso do contexto, recuperando informações de outro componente, no caso, startNewChallenge()
     const { startNewChallenge } = useContext(ChallengesContext);
 
-    const [time, setTime] = useState(0.1 * 60);
+    const [time, setTime] = useState(15 * 60);
     const [isActive, setIsActive] = useState(false);
     const [hasFinished, setHasFinished] = useState(false);
 
